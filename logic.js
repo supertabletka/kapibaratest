@@ -43,6 +43,7 @@
 
   function normalizeCategory(c) {
     var t = String(c || '').trim().toLowerCase();
+    if (/кальян|hookah|табак|смес/.test(t)) return 'hookah';
     if (/жидк|liquid/.test(t)) return 'liquid';
     if (/расход|part|испар|картридж/.test(t)) return 'part';
     if (/устр|device|pod/.test(t)) return 'device';
@@ -62,18 +63,62 @@
     return ['1', 'true', 'да', 'yes', 'new', 'новое', 'новинка'].indexOf(String(v === undefined || v === null ? '' : v).trim().toLowerCase()) !== -1;
   }
 
+  // Вкусы: массив {n, s} / {name, status} или строка «Груша:в наличии|Ананас:нет»
+  function normalizeFlavors(v) {
+    var list = [];
+    if (typeof v === 'string') {
+      v.split('|').forEach(function (part) {
+        part = part.trim();
+        if (!part) return;
+        var k = part.lastIndexOf(':');
+        list.push(k === -1 ? { n: part, s: '' } : { n: part.slice(0, k), s: part.slice(k + 1) });
+      });
+    } else if (Array.isArray(v)) {
+      v.forEach(function (f) {
+        if (typeof f === 'string') list.push({ n: f, s: '' });
+        else if (f) list.push({ n: f.n !== undefined ? f.n : f.name, s: f.s !== undefined ? f.s : f.status });
+      });
+    }
+    var seen = {}, out = [];
+    list.forEach(function (f) {
+      var n = String(f.n === undefined || f.n === null ? '' : f.n).trim();
+      if (!n || seen[n.toLowerCase()]) return;
+      seen[n.toLowerCase()] = true;
+      out.push({ n: n, s: normalizeStatus(f.s) });
+    });
+    return out;
+  }
+
+  function flavorCounts(flavors) {
+    var c = { 'in': 0, low: 0, out: 0, total: flavors.length };
+    flavors.forEach(function (f) { c[f.s] += 1; });
+    return c;
+  }
+
+  // Общий статус линейки по её вкусам: есть хоть один «в наличии» — «в наличии»; иначе «мало» / «нет»
+  function aggregateStatus(c) {
+    if (c['in'] > 0) return 'in';
+    if (c.low > 0) return 'low';
+    return 'out';
+  }
+
   function normalizeProduct(raw, i) {
     var name = String(raw && raw.name !== undefined ? raw.name : '').trim();
     if (!name) return null;
     var id = String(raw.id !== undefined && String(raw.id).trim() !== '' ? raw.id : 'p' + (i + 1)).trim();
+    var flavors = normalizeFlavors(raw.flavors !== undefined ? raw.flavors : raw['вкусы']);
+    var counts = flavorCounts(flavors);
     return {
       id: id,
       name: name,
       sub: String(raw.sub || '').trim(),
+      desc: String(raw.desc !== undefined ? raw.desc : (raw['описание'] || '')).trim(),
       category: normalizeCategory(raw.category),
       price: parsePrice(raw.price),
-      status: normalizeStatus(raw.status),
-      isNew: isTrue(raw.new !== undefined ? raw.new : raw.isnew)
+      status: flavors.length ? aggregateStatus(counts) : normalizeStatus(raw.status),
+      isNew: isTrue(raw.new !== undefined ? raw.new : raw.isnew),
+      flavors: flavors,
+      counts: counts
     };
   }
 
@@ -84,6 +129,22 @@
       if (!p || seen[p.id]) return;
       seen[p.id] = true;
       out.push(p);
+    });
+    return out;
+  }
+
+  // Плоский список для расчёта и слежения: у линейки с вкусами каждый вкус — отдельная позиция
+  function flavorId(p, f) { return p.id + '~' + f.n; }
+  function expandItems(products) {
+    var out = [];
+    products.forEach(function (p) {
+      if (!p.flavors.length) { out.push(p); return; }
+      p.flavors.forEach(function (f) {
+        out.push({
+          id: flavorId(p, f), parentId: p.id, name: f.n, sub: p.name,
+          category: p.category, price: p.price, status: f.s, isNew: p.isNew
+        });
+      });
     });
     return out;
   }
@@ -129,7 +190,10 @@
     return products.filter(function (p) {
       if (f && f.cat && f.cat !== 'all' && p.category !== f.cat) return false;
       if (f && f.onlyNew && !p.isNew) return false;
-      if (q && (p.name + ' ' + p.sub).toLowerCase().indexOf(q) === -1) return false;
+      if (q) {
+        var hay = (p.name + ' ' + p.sub + ' ' + (p.flavors || []).map(function (x) { return x.n; }).join(' ')).toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
       return true;
     });
   }
@@ -154,6 +218,6 @@
     parseCSV: parseCSV, rowsToObjects: rowsToObjects, normalizeStatus: normalizeStatus,
     normalizeCategory: normalizeCategory, parsePrice: parsePrice, normalizeProduct: normalizeProduct,
     normalizeAll: normalizeAll, formatPrice: formatPrice, pluralPositions: pluralPositions,
-    calcTotal: calcTotal, watchReady: watchReady, filterProducts: filterProducts, faqAnswer: faqAnswer
+    calcTotal: calcTotal, normalizeFlavors: normalizeFlavors, expandItems: expandItems, flavorId: flavorId, watchReady: watchReady, filterProducts: filterProducts, faqAnswer: faqAnswer
   };
 });

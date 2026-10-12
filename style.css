@@ -84,8 +84,8 @@ button { cursor: pointer; }
 .chip-btn svg { color: var(--accent); }
 .chip-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--ink); }
 .chip-btn[aria-pressed="true"] svg { color: var(--ink); }
-.cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 0 16px 12px; }
-.cat { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 64px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 12px; }
+.cats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 0 16px 12px; }
+.cat { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 64px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 11px; white-space: nowrap; padding: 0 2px; }
 .cat svg { color: var(--accent); }
 .cat.is-active { background: var(--accent); border-color: var(--accent); color: var(--ink); font-weight: 800; }
 .cat.is-active svg { color: var(--ink); }
@@ -163,3 +163,16 @@ button { cursor: pointer; }
 .two .btn { flex: 1; height: 48px; font-size: 14px; }
 
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom)); max-width: 440px; padding: 10px 16px; border-radius: 14px; background: var(--text); color: var(--ink); font-weight: 700; font-size: 13px; z-index: 30; }
+
+/* Карточка линейки со вкусами */
+.card.is-link { cursor: pointer; }
+.card.is-link:active { transform: scale(.98); }
+.card-count { color: var(--accent-soft); font-weight: 700; }
+.price-none { font-size: 12px; font-weight: 700; color: var(--muted); }
+.round-go { background: var(--surface-2); border: 1px solid var(--border-2); color: var(--accent); }
+.detail { padding: 14px 16px 0; }
+.detail-desc { margin: 0 0 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); font-size: 14px; }
+.detail-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.chip-sm { height: 40px; padding: 0 12px; font-size: 13px; }
+.list-tight { gap: 8px; padding-top: 12px; }
+.in-cart { min-width: 34px; text-align: center; font-weight: 800; font-size: 13px; color: var(--accent-soft); }
