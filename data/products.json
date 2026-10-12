@@ -1,0 +1,10 @@
+[
+  { "id": "1", "name": "Ягодный микс",       "sub": "Жидкость · 30 мл",  "category": "liquid", "price": 500, "status": "in",  "new": true },
+  { "id": "2", "name": "Цитрус",             "sub": "Жидкость · 30 мл",  "category": "liquid", "price": 500, "status": "low", "new": false },
+  { "id": "3", "name": "Мята и лёд",         "sub": "Жидкость · 30 мл",  "category": "liquid", "price": 500, "status": "in",  "new": true },
+  { "id": "4", "name": "Тропический",        "sub": "Жидкость · 30 мл",  "category": "liquid", "price": 500, "status": "out", "new": false },
+  { "id": "5", "name": "Сменный испаритель", "sub": "Расходник",         "category": "part",   "price": 300, "status": "in",  "new": false },
+  { "id": "6", "name": "Виноград",           "sub": "Жидкость · 30 мл",  "category": "liquid", "price": 500, "status": "in",  "new": false },
+  { "id": "7", "name": "Pod-устройство",     "sub": "Устройство",        "category": "device", "price": 1500, "status": "out", "new": false },
+  { "id": "8", "name": "Клубника",           "sub": "Жидкость · 30 мл",  "category": "liquid", "price": 500, "status": "in",  "new": false }
+]
