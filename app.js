@@ -4,7 +4,7 @@
 
   var L = window.KapLogic;
   var CFG = window.APP_CONFIG || {};
-  var tg = window.Telegram && window.Telegram.WebApp;
+  function tgApp() { return window.Telegram && window.Telegram.WebApp; }
 
   var products = [];
   var filter = { cat: 'all', onlyNew: false, q: '' };
@@ -74,6 +74,7 @@
 
   function openLink(url) {
     if (!url) return;
+    var tg = tgApp();
     try {
       if (tg && /^https:\/\/t\.me\//.test(url) && tg.openTelegramLink) { tg.openTelegramLink(url); return; }
       if (tg && tg.openLink) { tg.openLink(url); return; }
@@ -91,6 +92,7 @@
     if (name === 'watch') renderWatch();
     window.scrollTo(0, 0);
     try {
+      var tg = tgApp();
       if (tg && tg.BackButton) { if (name === 'catalog') tg.BackButton.hide(); else tg.BackButton.show(); }
     } catch (e) { /* не критично */ }
   }
@@ -353,10 +355,6 @@
       renderCalc();
       updateDock();
     });
-
-    try {
-      if (tg && tg.BackButton) tg.BackButton.onClick(function () { show('catalog'); });
-    } catch (e) { /* не критично */ }
   }
 
   function brandUi() {
@@ -392,8 +390,38 @@
     });
   }
 
+  // Скрипт Telegram грузим фоном: если telegram.org недоступен, витрина всё равно открывается сразу
+  var tgReady = false;
+  function setupTelegram() {
+    var tg = tgApp();
+    if (!tg || tgReady) return;
+    tgReady = true;
+    try {
+      tg.ready();
+      tg.expand();
+      tg.setHeaderColor('#140d09');
+      tg.setBackgroundColor('#140d09');
+      if (tg.BackButton) {
+        tg.BackButton.onClick(function () { show('catalog'); });
+        if (currentView !== 'catalog') tg.BackButton.show();
+      }
+    } catch (e) { /* не критично */ }
+  }
+
+  function loadTelegramSdk() {
+    if (tgApp()) { setupTelegram(); return; }
+    try {
+      var s = document.createElement('script');
+      s.src = 'https://telegram.org/js/telegram-web-app.js';
+      s.async = true;
+      s.onload = setupTelegram;
+      s.onerror = function () { /* вне Telegram или без доступа — работаем без него */ };
+      document.head.appendChild(s);
+    } catch (e) { /* не критично */ }
+  }
+
   function init() {
-    try { if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#140d09'); tg.setBackgroundColor('#140d09'); } } catch (e) { /* вне Telegram */ }
+    loadTelegramSdk();
     cart = lsGet('kap.cart', {});
     watch = lsGet('kap.watch', {});
     brandUi();
