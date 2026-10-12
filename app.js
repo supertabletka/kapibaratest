@@ -126,6 +126,15 @@
 
       var tile = el('div', 'tile');
       tile.style.background = tileBg(p);
+      if (p.img) {
+        var ph = el('img', 'tile-img');
+        ph.alt = '';
+        ph.loading = 'lazy';
+        ph.onload = function () { tile.classList.add('has-img'); };
+        ph.onerror = function () { if (ph.parentNode) ph.parentNode.removeChild(ph); };
+        ph.src = p.img;
+        tile.appendChild(ph);
+      }
       var icon = el('span');
       icon.innerHTML = ICONS[p.category] || ICONS.other;
       tile.appendChild(icon);
@@ -188,6 +197,7 @@
         '<h2 class="page-title" id="pr-name"></h2>' +
         '<p class="hero-sub" id="pr-sub"></p>' +
       '</header>' +
+      '<div class="detail-img" id="pr-img" hidden></div>' +
       '<div class="detail">' +
         '<p class="detail-desc" id="pr-desc"></p>' +
         '<div class="detail-tools">' +
@@ -210,6 +220,17 @@
     if (!p) { show('catalog'); return; }
     $('pr-name').textContent = p.name;
     $('pr-sub').textContent = p.sub;
+    var box = $('pr-img');
+    clear(box);
+    box.hidden = true;
+    if (p.img) {
+      var im = el('img');
+      im.alt = p.name;
+      im.onload = function () { box.hidden = false; };
+      im.onerror = function () { box.hidden = true; };
+      im.src = p.img;
+      box.appendChild(im);
+    }
     var d = $('pr-desc');
     d.textContent = p.desc;
     d.hidden = !p.desc;

@@ -102,6 +102,13 @@
     return 'out';
   }
 
+  // Фото только из папки сайта (img/имя.jpg): внешние ссылки не принимаем
+  function safeImg(v) {
+    var t = String(v === undefined || v === null ? '' : v).trim();
+    if (!t || /^[a-z][a-z0-9+.-]*:/i.test(t) || t.indexOf('//') === 0 || t.indexOf('..') !== -1) return '';
+    return t;
+  }
+
   function normalizeProduct(raw, i) {
     var name = String(raw && raw.name !== undefined ? raw.name : '').trim();
     if (!name) return null;
@@ -112,6 +119,7 @@
       id: id,
       name: name,
       sub: String(raw.sub || '').trim(),
+      img: safeImg(raw.img !== undefined ? raw.img : raw['фото']),
       desc: String(raw.desc !== undefined ? raw.desc : (raw['описание'] || '')).trim(),
       category: normalizeCategory(raw.category),
       price: parsePrice(raw.price),
